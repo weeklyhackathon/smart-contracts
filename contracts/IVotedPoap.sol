@@ -22,8 +22,10 @@ contract IVotedPoap is ERC721, Ownable {
 
     // Mapping from token ID to vote information
     mapping(uint256 => VoteInfo) public voteInfo;
+    mapping(uint256 => string) public weekURI;
 
     event MinterUpdated(address indexed previousMinter, address indexed newMinter);
+    event WeekURIUpdated(uint256 indexed week, string uri);
 
     modifier onlyMinter() {
         require(msg.sender == minter, "Only minter can call");
@@ -62,20 +64,24 @@ contract IVotedPoap is ERC721, Ownable {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         _requireOwned(tokenId);
         VoteInfo memory info = voteInfo[tokenId];
+        address owner = ownerOf(tokenId);
         
-        string memory svg = string(abi.encodePacked(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><style>text { font-family: monospace; fill: white; }</style><rect width="400" height="400" fill="#1E1E1E"/><text x="20" y="40">I Voted POAP</text>',
-            '<text x="20" y="80">Week: ', Strings.toString(info.week), '</text>',
-            '<text x="20" y="120">Voter: ', addressToString(info.voter), '</text>',
-            '<text x="20" y="160">Votes: ', Strings.toString(info.voteCount), '</text>',
-            '</svg>'
+        string memory metadata = string(abi.encodePacked(
+            '{',
+            '"name": "WeeklyHackathon Vote - Week ', Strings.toString(info.week), '",',
+            '"description": "Proof of vote for WeeklyHackathon Week ', Strings.toString(info.week), '",',
+            '"image": "', weekURI[info.week], '",',
+            '"attributes": [',
+                '{"trait_type": "owner", "value": "', addressToString(owner), '"},',
+                '{"trait_type": "voter", "value": "', addressToString(info.voter), '"},',
+                '{"trait_type": "vote_count", "value": ', Strings.toString(info.voteCount), '}',
+            ']',
+            '}'
         ));
 
-        string memory encodedSvg = Base64.encode(bytes(svg));
-        
         return string(abi.encodePacked(
-            'data:image/svg+xml;base64,',
-            encodedSvg
+            'data:application/json;base64,',
+            Base64.encode(bytes(metadata))
         ));
     }
 
@@ -103,5 +109,15 @@ contract IVotedPoap is ERC721, Ownable {
         } else {
             return uint8(bytes1('a')) + value - 10;
         }
+    }
+
+    /**
+     * @dev Sets the URI for a specific week
+     * @param week The week number
+     * @param uri The URI to set
+     */
+    function setWeekURI(uint256 week, string calldata uri) external onlyOwner {
+        weekURI[week] = uri;
+        emit WeekURIUpdated(week, uri);
     }
 }
