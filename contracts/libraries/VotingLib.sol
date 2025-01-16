@@ -43,7 +43,7 @@ library VotingLib {
     function messageHash(
         address voter,
         uint256 week,
-        uint256[] calldata allocations
+        uint256[] calldata allocations // ALWAYS in descending order
     ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(
             "Weekly Hackathon week ",
