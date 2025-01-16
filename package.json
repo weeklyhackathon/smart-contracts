@@ -1,0 +1,30 @@
+{
+  "name": "weeklyhackathon-smart-contracts",
+  "version": "0.0.9",
+  "description": "Smart contracts for weeklyhackathon.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weeklyhackathon/smart-contracts.git"
+  },
+  "keywords": [
+    "solidity"
+  ],
+  "author": "moon.eth",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/weeklyhackathon/smart-contracts/issues"
+  },
+  "homepage": "https://github.com/weeklyhackathon/smart-contracts#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "hardhat": "^2.22.18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
