@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./libraries/VotingLib.sol";
 import "./interfaces/IWeeklyHackathon.sol";
+import "./IVotedPoap.sol";
 /**
  * @title WeeklyHackathonVoting
  * @dev Contract for managing weekly hackathon voting
@@ -11,6 +12,7 @@ import "./interfaces/IWeeklyHackathon.sol";
 contract WeeklyHackathonVoting is Ownable {
     IWeeklyHackathon public hackathonContract;
     address public signer;
+    IVotedPoap public poapContract;
     
     event VoteCast(
         address indexed voter,
@@ -27,13 +29,17 @@ contract WeeklyHackathonVoting is Ownable {
 
     constructor(
         address _hackathonContract,
-        address _signer
+        address _signer,
+        address _poapContract
     ) Ownable(msg.sender) {
         require(_hackathonContract != address(0), "Invalid hackathon contract address");
         require(_signer != address(0), "Invalid signer address");
         require(_signer.code.length == 0, "Signer must be a wallet");
         hackathonContract = IWeeklyHackathon(_hackathonContract);
         signer = _signer;
+        if (_poapContract != address(0)) {
+            poapContract = IVotedPoap(_poapContract);
+        }
     }
 
     function setHackathonContract(address _newHackathonContract) external onlyOwner {
@@ -47,6 +53,11 @@ contract WeeklyHackathonVoting is Ownable {
         require(_newSigner != signer, "Signer same");
         require(_newSigner.code.length == 0, "Signer not wallet");
         signer = _newSigner;
+    }
+
+    function setPoapContract(address _newPoapContract) external onlyOwner {
+        require(_newPoapContract != address(poapContract), "Same address");
+        poapContract = IVotedPoap(_newPoapContract);
     }
 
     function vote(
@@ -71,6 +82,11 @@ contract WeeklyHackathonVoting is Ownable {
         }
 
         emit VoteCast(msg.sender, week, totalAllocation);
+
+        // Mint POAP if contract is set
+        if (address(poapContract) != address(0)) {
+            poapContract.mint(msg.sender, week, totalAllocation);
+        }
     }
 
     function setVotingDuration(
