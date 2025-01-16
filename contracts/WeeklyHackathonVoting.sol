@@ -3,13 +3,13 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./libraries/VotingLib.sol";
-
+import "./interfaces/IWeeklyHackathon.sol";
 /**
  * @title WeeklyHackathonVoting
  * @dev Contract for managing weekly hackathon voting
  */
 contract WeeklyHackathonVoting is Ownable {
-    address public hackathonContract;
+    IWeeklyHackathon public hackathonContract;
     address public signer;
     
     // Mapping: week => projectId => voteCount
@@ -24,14 +24,14 @@ contract WeeklyHackathonVoting is Ownable {
         require(_hackathonContract != address(0), "Invalid hackathon contract address");
         require(_signer != address(0), "Invalid signer address");
         require(_signer.code.length == 0, "Signer must be a wallet");
-        hackathonContract = _hackathonContract;
+        hackathonContract = IWeeklyHackathon(_hackathonContract);
         signer = _signer;
     }
 
     function setHackathonContract(address _newHackathonContract) external onlyOwner {
         require(_newHackathonContract != address(0), "Invalid hackathon contract address");
-        require(_newHackathonContract != hackathonContract, "Same address as current");
-        hackathonContract = _newHackathonContract;
+        require(_newHackathonContract != address(hackathonContract), "Same address as current");
+        hackathonContract = IWeeklyHackathon(_newHackathonContract);
     }
 
     function setSigner(address _newSigner) external onlyOwner {
@@ -54,6 +54,7 @@ contract WeeklyHackathonVoting is Ownable {
         hasVoted[week][msg.sender] = true;
         
           for (uint256 i = 0; i < projects.length;) {
+              require(hackathonContract.projects(projects[i]).weekNumber == week, "Invalid project week");
               votes[week][projects[i]] += allocations[i];
               unchecked { i++; }
           }
